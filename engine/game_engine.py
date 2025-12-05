@@ -16,6 +16,8 @@ from ui.screens.main_menu import MainMenu
 from ui.screens.inventory_menu import InventoryMenu
 from ui.screens.shop_menu import ShopMenu
 from ui.screens.stats_menu import StatsMenu
+from ui.screens.games_menu import GamesMenu
+from ui.screens.friend_menu import FriendMenu
 from config import GameConfig, SpriteConfig
 
 logger = logging.getLogger(__name__)
@@ -163,7 +165,11 @@ class GameEngine:
             return
         
         self.last_save = current_time
-        self.save_manager.save(self.chao, self.inventory, self.background_index)
+        success = self.save_manager.save(self.chao, self.inventory, self.background_index)
+        
+        if success:
+            # Show save icon briefly
+            logger.debug("Auto-saved game")
     
     def handle_menu_action(self, action: str):
         """Handle menu actions"""
@@ -172,23 +178,63 @@ class GameEngine:
             self.main_screen.active = True
         
         elif action == "inventory":
-            menu = InventoryMenu(self.display, self.buttons, self.renderer, 
-                               self.chao, self.inventory)
+            menu = InventoryMenu(
+                self.display, 
+                self.buttons, 
+                self.renderer, 
+                self.chao, 
+                self.inventory
+            )
             result = menu.run()
+            
             if result == "eat_animation":
                 self.main_screen.set_animation(SpriteConfig.EAT, [5, 5, 5, 5], False)
+                time.sleep(1.5)
+            
             self.current_menu = None
             self.main_screen.active = True
         
         elif action == "shop":
-            menu = ShopMenu(self.display, self.buttons, self.renderer,
-                          self.chao, self.inventory)
+            menu = ShopMenu(
+                self.display, 
+                self.buttons, 
+                self.renderer,
+                self.chao, 
+                self.inventory
+            )
             menu.run()
             self.current_menu = None
             self.main_screen.active = True
         
         elif action == "stats":
-            menu = StatsMenu(self.display, self.buttons, self.renderer, self.chao)
+            menu = StatsMenu(
+                self.display, 
+                self.buttons, 
+                self.renderer, 
+                self.chao
+            )
+            menu.run()
+            self.current_menu = None
+            self.main_screen.active = True
+        
+        elif action == "games":
+            menu = GamesMenu(
+                self.display, 
+                self.buttons, 
+                self.renderer, 
+                self.chao
+            )
+            menu.run()
+            self.current_menu = None
+            self.main_screen.active = True
+        
+        elif action == "friend":
+            menu = FriendMenu(
+                self.display, 
+                self.buttons, 
+                self.renderer, 
+                self.chao
+            )
             menu.run()
             self.current_menu = None
             self.main_screen.active = True
@@ -209,6 +255,7 @@ class GameEngine:
                         self.powered_on = True
                         self.display.show()
                         self.main_screen.active = True
+                        logger.info("System powered on")
                     
                     continue
                 
@@ -224,6 +271,7 @@ class GameEngine:
                         self.main_screen.active = False
                         menu = MainMenu(self.display, self.buttons, self.renderer)
                         result = menu.run()
+                        
                         if result:
                             self.handle_menu_action(result)
                         else:
@@ -233,6 +281,7 @@ class GameEngine:
                         self.powered_on = False
                         self.display.hide()
                         self.save_manager.save(self.chao, self.inventory, self.background_index)
+                        logger.info("System powered off")
                 
                 # Auto-save
                 self.auto_save()
