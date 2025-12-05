@@ -1,0 +1,12 @@
+# Display libraries
+luma.core>=2.3.0
+luma.oled>=3.8.0
+Pillow>=9.0.0
+
+# Hardware libraries (Raspberry Pi)
+RPi.GPIO>=0.7.1; platform_machine=="armv7l" or platform_machine=="aarch64"
+smbus>=1.1.post2; platform_machine=="armv7l" or platform_machine=="aarch64"
+pybluez>=0.23; platform_machine=="armv7l" or platform_machine=="aarch64"
+
+# Utilities
+timeloop>=1.0.2
